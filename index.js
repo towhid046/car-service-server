@@ -33,6 +33,7 @@ async function run() {
     // Send a ping to confirm a successful connection
 
     const serviceCollection = client.db("carService").collection("services");
+    const customersCollection = client.db("carService").collection("customers");
 
     app.get("/services", async (req, res) => {
       const cursor = serviceCollection.find();
@@ -44,10 +45,27 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const options = {
-        projection: {title:1,price:1,  }
-      }
+        projection: { title: 1, price: 1, img:1 },
+      };
       const service = await serviceCollection.findOne(query, options);
       res.send(service);
+    });
+
+    app.get("/customers", async (req, res) => {
+      // console.log(req.query.email)
+      let query = {}
+      if(req.query?.email){
+        query = {email: req.query.email }
+      }
+      const result = await customersCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/customers", async (req, res) => {
+      const customer = req.body;
+      const customerDoc = { ...customer };
+      const result = await customersCollection.insertOne(customerDoc);
+      res.send(result);
     });
 
     // await client.db("admin").command({ ping: 1 });
