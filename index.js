@@ -1,5 +1,7 @@
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const cookieParser = require('cookie-parser')
 require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
@@ -8,8 +10,15 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // middlewawre
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
 app.use(express.json());
+app.use(cookieParser());
+
 
 app.get("/", (req, res) => {
   res.send("Car service server in running..");
@@ -52,7 +61,8 @@ async function run() {
     });
 
     app.get("/customers", async (req, res) => {
-      // console.log(req.query.email)
+      console.log(req.cookies?.token);
+
       let query = {};
       if (req.query?.email) {
         query = { email: req.query.email };
@@ -62,10 +72,25 @@ async function run() {
     });
 
     app.post("/customers", async (req, res) => {
+
       const customer = req.body;
       const customerDoc = { ...customer };
       const result = await customersCollection.insertOne(customerDoc);
       res.send(result);
+    });
+
+    // set cookies
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: false,
+        })
+        .send({ success: true });
     });
 
     app.patch("/orders/:id", async (req, res) => {
