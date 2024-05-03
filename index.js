@@ -45,7 +45,7 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const options = {
-        projection: { title: 1, price: 1, img:1 },
+        projection: { title: 1, price: 1, img: 1 },
       };
       const service = await serviceCollection.findOne(query, options);
       res.send(service);
@@ -53,9 +53,9 @@ async function run() {
 
     app.get("/customers", async (req, res) => {
       // console.log(req.query.email)
-      let query = {}
-      if(req.query?.email){
-        query = {email: req.query.email }
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query.email };
       }
       const result = await customersCollection.find(query).toArray();
       res.send(result);
@@ -65,6 +65,13 @@ async function run() {
       const customer = req.body;
       const customerDoc = { ...customer };
       const result = await customersCollection.insertOne(customerDoc);
+      res.send(result);
+    });
+
+    app.delete("/items/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await customersCollection.deleteOne(query);
       res.send(result);
     });
 
